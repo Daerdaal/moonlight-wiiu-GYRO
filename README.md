@@ -10,10 +10,11 @@ Moonlight Wii U is a port of [Moonlight Embedded](https://github.com/moonlight-s
 > :information_source: A Wii U LAN Adapter is recommended!
 
 * compile this "GYRO" version (with the docker file, it's the easiest way in my opinion), extract it to the root of your SD Card.
-* Enter the IP of your Sunshine/GFE server in the `moonlight.conf` file located at `sd:/wiiu/apps/moonlight`.
-* Ensure your Sunshine/GFE server and Wii U are on the same network.
+* Enter the IP of your Sunshine server in the `moonlight.conf` file located at `sd:/wiiu/apps/moonlight`.
+* Ensure your Sunshine server and Wii U are on the same network.
 * Ensure to set the gamepad to DS4 in sunshine host.
-* If using GFE, turn on Shield Streaming in the GFE settings.
+* If your button are swapped, activate swap button in moonlight.conf
+* Don't use GFE, use only sunshine for this version.
 * Pair Moonlight Wii U with the server.
 * Accept the pairing confirmation on your PC.
 * Connect to the server with Moonlight Wii U.
