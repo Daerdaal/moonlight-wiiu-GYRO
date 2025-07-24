@@ -8,7 +8,15 @@
 #include <coreinit/time.h>
 #include <coreinit/alarm.h>
 #include <coreinit/thread.h>
+// --- NEW: Limelight motion constants ---------------------------------
+#ifndef LI_MOTION_TYPE_ACCEL
+#define LI_MOTION_TYPE_ACCEL 0
+#define LI_MOTION_TYPE_GYRO  1
+#endif
 
+// Gyro : VPAD 1.0  = 360/s    convertir en rad/s pour Sunshine
+#define DEG_TO_RAD          (3.14159265358979323846f / 180.0f)
+#define VPAD_GYRO_TO_RAD_S  (360.0f * DEG_TO_RAD)
 #define millis() OSTicksToMilliseconds(OSGetTime())
 
 int disable_gamepad = 0;
@@ -27,6 +35,9 @@ static uint64_t touchDownMillis = 0;
 
 #define TOUCH_WIDTH 1280
 #define TOUCH_HEIGHT 720
+
+// --- NEW: helper for gyro scale (VPAD 1.0 == 360/s) ---
+#define GYRO_SCALE 360.0f
 
 static int thread_running;
 static OSThread inputThread;
@@ -147,11 +158,40 @@ void wiiu_input_update(void) {
       return;
     }
 
+    /* ---------- NEW: envoi capteurs ---------- */
+    uint8_t idx = controllerNumber;   // valeur avant l'auto-increment
+
+    // Accel: keep values in G units, adjust axes to DS4 convention
+    float accelX = -vpad.accelorometer.acc.x;
+    float accelY =  vpad.accelorometer.acc.y;
+    float accelZ = -vpad.accelorometer.acc.z;
+
+    // Accelerometre (m/s2)
+    LiSendControllerMotionEvent(idx,
+        LI_MOTION_TYPE_ACCEL,
+        accelX, accelY, accelZ);
+
+    // Convert VPAD scaled floats (1.0 == 360/s) to degrees per second
+    float gyroPitch = -vpad.gyro.x * GYRO_SCALE;
+    float gyroYaw   = -vpad.gyro.y * GYRO_SCALE;
+    float gyroRoll  =  vpad.gyro.z * GYRO_SCALE;
+
+    /* Gyroscope : 1.0 = 360/s to rad/s */
+    LiSendControllerMotionEvent(idx,
+        LI_MOTION_TYPE_GYRO,
+        gyroPitch, gyroYaw, gyroRoll);
+
     LiSendMultiControllerEvent(controllerNumber++, gamepad_mask, buttonFlags,
       (vpad.hold & VPAD_BUTTON_ZL) ? 0xFF : 0,
       (vpad.hold & VPAD_BUTTON_ZR) ? 0xFF : 0,
       vpad.leftStick.x * INT16_MAX, vpad.leftStick.y * INT16_MAX,
       vpad.rightStick.x * INT16_MAX, vpad.rightStick.y * INT16_MAX);
+
+    //   LiSendControllerMotionEvent(idx,
+    //                               accelX, accelY, accelZ,
+    //                               gyroPitch, gyroYaw, gyroRoll);
+    // }
+    // // ----------------------------------------------------------------
 
     VPADTouchData touch;
     VPADGetTPCalibratedPoint(VPAD_CHAN_0, &touch, &vpad.tpNormal);
