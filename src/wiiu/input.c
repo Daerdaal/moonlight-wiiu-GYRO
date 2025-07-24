@@ -187,12 +187,6 @@ void wiiu_input_update(void) {
       vpad.leftStick.x * INT16_MAX, vpad.leftStick.y * INT16_MAX,
       vpad.rightStick.x * INT16_MAX, vpad.rightStick.y * INT16_MAX);
 
-    //   LiSendControllerMotionEvent(idx,
-    //                               accelX, accelY, accelZ,
-    //                               gyroPitch, gyroYaw, gyroRoll);
-    // }
-    // // ----------------------------------------------------------------
-
     VPADTouchData touch;
     VPADGetTPCalibratedPoint(VPAD_CHAN_0, &touch, &vpad.tpNormal);
     handleTouch(touch);
